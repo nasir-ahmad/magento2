@@ -1,0 +1,55 @@
+version: '3.7'
+
+services:
+  nginx:
+    image: magecloudkit/nginx
+    volumes:
+      - .:/var/www/html
+    ports:
+     - "80:80"
+    depends_on:
+      - phpfpm
+    environment:
+      HTTPS: 'off'
+      PHP_HOST: phpfpm
+      PHP_PORT: 9000
+      APP_MAGE_MODE: developer
+
+  phpfpm:
+    build: .
+    volumes:
+      - .:/var/www/html
+      - ./docker/bin/start:/usr/local/bin/start
+    depends_on:
+      - db
+      - redis
+    environment:
+      ENVIRONMENT: development
+      APP_MAGE_MODE: developer
+      CACHE_PREFIX: 1_
+      PHP_OPCACHE_DISABLE: 'true'
+      MAGE_FAST_STARTUP: 'true'
+      MYSQL_HOST: db
+      MYSQL_DATABASE: magento2
+      MYSQL_USER: magento2
+      MYSQL_PASSWORD: magento2
+      REDIS_CACHE_HOST: redis
+      REDIS_SESSION_HOST: redis
+
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: magento2
+      MYSQL_DATABASE: magento2
+      MYSQL_USER: magento2
+      MYSQL_PASSWORD: magento2
+
+  redis:
+    image: redis:3.2
+    ports:
+      - "6379:6379"
+
+volumes:
+    db_data:
