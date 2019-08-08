@@ -1,30 +1,1 @@
-#!/bin/bash
-
-#
-# This script serves as the entry point into the Docker image.
-#
-# It is suitable for Magento 2.3.
-#
-# Author: Rob Morgan
-#
-
-echo "Configuring PHP settings..."
-if [ "$PHP_OPCACHE_DISABLE" = true ] ; then
-    echo 'Disabling PHP OPcache...'
-    echo -e "opcache.enable=0\nopcache.enable_cli=0" > $PHP_INI_DIR/conf.d/opcache.ini
-fi
-
-echo "Starting Magento..."
-
-# Init
-if [ "$MAGE_FAST_STARTUP" = true ] ; then
-    echo 'Skipping Magento init...'
-else
-    # dont flush static assets on startup as the CI service builds them
-    # into the Docker image before setup:upgrade is run
-    php /var/www/html/bin/magento setup:upgrade --keep-generated \
-      && php /var/www/html/bin/magento cache:flush
-fi
-
-# Start the php-fpm service
-/usr/local/sbin/php-fpm --nodaemonize --allow-to-run-as-root
+#!/bin/bash## This script serves as the entry point into the Docker image.## It is suitable for Magento 2.3.## Author: Rob Morgan#echo "Configuring PHP settings..."if [ "$PHP_OPCACHE_DISABLE" = true ] ; then    echo 'Disabling PHP OPcache...'    echo -e "opcache.enable=0\nopcache.enable_cli=0" > $PHP_INI_DIR/conf.d/opcache.inifiecho "Starting Magento..."# Initif [ "$MAGE_FAST_STARTUP" = true ] ; then    echo 'Skipping Magento init...'else    # dont flush static assets on startup as the CI service builds them    # into the Docker image before setup:upgrade is run    php /var/www/html/bin/magento setup:upgrade --keep-generated \      && php /var/www/html/bin/magento cache:flushfi# Start the php-fpm service/usr/local/sbin/php-fpm --nodaemonize --allow-to-run-as-root
